@@ -1,7 +1,7 @@
 
-rsconnect::setAccountInfo(name='peterchika3254',
-                          token='553D0671DBCD03DCD0C2671C67F9B10B',
-                          secret='mRYhAHNqwUsnajbb5u26bAK+Ipk8QAs1InAuY91r')
+rsconnect::setAccountInfo(name='xxxxxxxxxxx',
+                          token='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                          secret='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
 
 # Prevent terra package installation/loading
 options(repos = c(CRAN = "https://cran.rstudio.com/"))
