@@ -380,3 +380,407 @@ This project demonstrates:
 ---
 
 *This project exemplifies the integration of advanced statistical modeling, interactive web development, and business intelligence to create actionable insights for real estate market analysis. The comprehensive approach demonstrates both technical depth and practical applicability in professional data science contexts.*
+
+
+
+
+
+
+# ITEC 621 Predictive Analytics Project: Predicting Housing Prices
+
+## 📋 Project Information
+
+**Course**: ITEC-621-001 Predictive Analytics (Thursday)  
+**Institution**: American University, Kogod School of Business  
+**Team**: Team 2  
+**Deliverable**: 4  
+**Last Updated**: April 30, 2024
+
+### 👥 Team Members
+- **Peter Chika Ozo-Ogueji** (Lead Data Scientist)
+- **Michael Guddah**
+- **Loc Le** 
+- **Nga Thi Quynh Ho**
+
+---
+
+## 🎯 Business Problem & Analytics Question
+
+### Business Question
+*For real estate agents or individuals looking to sell a house in Seattle, Washington, what are the most important home features to consider when predicting the sales price?*
+
+### Business Case & Market Context
+The housing market is currently experiencing unprecedented conditions with rapidly rising home prices despite higher mortgage rates. Key market indicators include:
+
+- **6.5% year-over-year price increase** (February 2024)
+- **Record-low housing supply** compared to historical standards
+- **Seller's market advantage** with homes selling above asking price
+- **Buyer value-seeking behavior** in unfavorable market conditions
+
+This analysis provides critical insights for real estate professionals to:
+- Set competitive listing prices
+- Maximize seller profitability
+- Attract value-conscious buyers
+- Balance market dynamics effectively
+
+### Analytics Objective
+**What effect do the most important features of a house have on its selling price?**
+
+Our dual-focused approach targets:
+1. **Predictive Accuracy**: Maximum model performance and reliability
+2. **Business Interpretation**: Clear, actionable insights for stakeholders
+
+---
+
+## 📊 Dataset Overview
+
+### Data Source & Specifications
+- **Source**: [Kaggle Seattle House Sales Prices Dataset](https://www.kaggle.com/datasets/sameersmahajan/seattle-house-sales-prices)
+- **Size**: 21,613 entries with 21 variables
+- **Coverage**: Comprehensive Seattle real estate market data
+- **Scope**: Multiple years of housing transactions
+
+### Key Variables Dictionary
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `price` | Numeric | House selling price (USD) - **Target Variable** |
+| `bedrooms` | Numeric | Number of bedrooms |
+| `bathrooms` | Numeric | Number of bathrooms |
+| `sqft_living` | Numeric | Total liveable square footage |
+| `sqft_lot` | Numeric | Total property square footage |
+| `floors` | Numeric | Number of floors |
+| `waterfront` | Binary | Waterfront view (0=No, 1=Yes) |
+| `view` | Categorical | Scenic outlook score (0-4) |
+| `condition` | Categorical | Overall condition rating (1-5) |
+| `grade` | Categorical | Appraisal grade (1-14) |
+| `yr_built` | Numeric | Year house was built |
+| `yr_renovated` | Numeric | Year of renovation (0 if none) |
+
+### Engineered Features
+- **`house_age`**: Calculated as `2024 - yr_built`
+- **`renovated`**: Binary indicator (0=No renovation, 1=Renovated)
+
+---
+
+## 📈 Exploratory Data Analysis
+
+### Descriptive Statistics Summary
+
+| Variable | Median | Mean | Std Dev | Distribution |
+|----------|--------|------|---------|--------------|
+| **Price** | $450,000 | $540,084 | $367,135 | Right-skewed |
+| **Bedrooms** | 3 | 3.369 | 0.93 | Right-skewed |
+| **Bathrooms** | 2.25 | 2.115 | 0.77 | Right-skewed |
+| **Sqft_Living** | 1,910 | 2,080 | 918.44 | Right-skewed |
+
+### Key Correlation Insights
+
+**Strongest Price Correlations:**
+- **Living Space** (0.70): Strongest predictor
+- **Bathrooms** (0.53): Moderate positive correlation  
+- **House Age** (-0.05): Surprisingly weak negative correlation
+
+**ANOVA Results**: All categorical variables (`waterfront`, `view`, `condition`, `grade`) show statistically significant price variations (p < 0.05)
+
+### Data Preprocessing Pipeline
+
+1. **Data Quality Assessment**
+   - No missing values detected
+   - Identified and removed 1 outlier (33-bedroom house)
+
+2. **Feature Engineering**
+   ```r
+   # Create house_age variable
+   house_age <- 2024 - yr_built
+   
+   # Create renovation indicator
+   renovated <- ifelse(yr_renovated == 0, 0, 1)
+   ```
+
+3. **Variable Selection & Cleanup**
+   - Removed unnecessary variables: `id`, `date`, `sqft_above`, `sqft_basement`, `zipcode`, `lat`, `long`, `sqft_living15`, `sqft_lot15`
+   - Converted categorical variables to factors
+
+4. **Data Type Optimization**
+   - Categorical variables: `waterfront`, `view`, `condition`, `grade`, `renovated`
+   - Maintained numeric format for continuous variables
+
+---
+
+## 🤖 Modeling Methodology
+
+### Model Selection Strategy
+
+We implemented a comprehensive modeling approach with **10 different models** across three methodological frameworks:
+
+#### 1. **Linear Models (OLS/WLS)**
+- **Challenge**: Initial model violated normality (EN) and homoscedasticity (EV) assumptions
+- **Solution**: Log-linear transformation corrected normality
+- **Limitation**: Heteroscedasticity persisted despite weighted least squares attempts
+
+#### 2. **Regularized Regression (LASSO)**
+- **Advantage**: Less sensitive to assumption violations
+- **Feature Selection**: Automatic shrinkage to identify most important variables
+- **Variants**: Both weighted and unweighted versions
+
+#### 3. **Non-Parametric (Random Forest)**
+- **Benefit**: No parametric assumptions required
+- **Strength**: Handles non-linear relationships and interactions
+- **Output**: Variable importance rankings
+
+### Model Specifications
+
+| Model Family | Variants | Predictors | Response Variable |
+|--------------|----------|------------|-------------------|
+| **OLS/WLS** | Full, Small | 11, 9 | log(price) |
+| **LASSO** | Full, Small, Weighted | 11, 9 | log(price) |
+| **Random Forest** | Full, Small | 11, 9 | log(price) |
+
+**Feature Sets:**
+- **Full Models** (11 predictors): All selected business-relevant features
+- **Small Models** (9 predictors): Stepwise-selected significant features
+
+---
+
+## 📊 Model Performance Results
+
+### 10-Fold Cross-Validation Results
+
+| Model | MSE | RMSE | R² | Primary Use Case |
+|-------|-----|------|----|----|
+| **RF.full** | **0.086300** | **0.293768** | **70%** | **🏆 Best Prediction** |
+| RF.small | 0.091526 | 0.302532 | 68% | Simplified Prediction |
+| LASSO.small.wts | 0.097070 | 0.311560 | 65% | Regularized Selection |
+| LASSO.small | 0.097091 | 0.311595 | 65% | Feature Selection |
+| LASSO.full.wts | 0.097089 | 0.311591 | 65% | Weighted Regularization |
+| LASSO.full | 0.097110 | 0.311625 | 65% | Full Regularization |
+| **OLS.small** | **0.097129** | **0.311655** | **65%** | **🎯 Best Interpretation** |
+| WLS.small | 0.097135 | 0.311665 | 65% | Weighted Linear |
+| OLS.full | 0.097169 | 0.311720 | 65% | Full Linear |
+| WLS.full | 0.097179 | 0.311736 | 65% | Weighted Full |
+
+### Final Model Selection
+
+#### For Predictive Accuracy: **Random Forest (RF.full)**
+- **MSE**: 0.086300 (lowest among all models)
+- **Variance Explained**: 70%
+- **Advantage**: Superior handling of non-linear relationships
+
+#### For Business Interpretation: **OLS Small Model**
+- **MSE**: 0.097129 (acceptable performance)
+- **Variance Explained**: 65%
+- **Advantage**: Clear coefficient interpretation for business insights
+
+---
+
+## 🔍 Key Analytical Findings
+
+### Variable Importance (Random Forest)
+
+**Most Influential Predictors:**
+1. **House Age** (222.4% IncMSE) - Most important predictor
+2. **Lot Size** (152.6% IncMSE) - Property size significance  
+3. **Grade** (96.8% IncMSE) - Quality assessment impact
+4. **Living Space** (73.0% IncMSE) - Interior square footage
+5. **View Rating** (64.2% IncMSE) - Scenic value importance
+
+### Quantitative Price Effects (OLS Model Coefficients)
+
+#### Continuous Variables
+*All interpretations: "On average, holding all other variables constant"*
+
+| Feature | Effect | Interpretation |
+|---------|--------|----------------|
+| **Bathrooms** | **+8.4%** per additional | Strong value driver |
+| **Living Space** | **+0.018%** per sqft | Consistent appreciation |
+| **Floors** | **+7.7%** per additional | Vertical space premium |
+| **House Age** | **+0.6%** per year | Counterintuitive positive effect |
+| **Bedrooms** | **-3.3%** per additional | Efficiency over quantity |
+
+#### Categorical Variables
+
+**Waterfront Premium:**
+- **+31.5%** price increase for waterfront properties
+
+**View Rating Effects** (vs. View 0):
+- View 1: **+18.0%**
+- View 2: **+9.7%** 
+- View 3: **+12.7%**
+- View 4: **+25.2%**
+
+**Condition Rating Effects** (vs. Condition 1):
+- Condition 3: **+14.9%**
+- Condition 4: **+16.8%**
+- Condition 5: **+23.4%**
+
+**Grade Level Effects** (vs. Grade 1):
+- Grades 8-13: **+72.2% to +134%** (significant premium for high quality)
+- Grades 3-5: **-5.1% to -1.1%** (below-average impact)
+
+---
+
+## 💡 Business Insights & Recommendations
+
+### Strategic Findings
+
+#### Primary Value Drivers
+1. **Property Age**: Most influential factor (unexpected positive correlation)
+2. **Lot Size**: Total property size matters more than just living space
+3. **Quality Ratings**: Grade and condition have exponential impact on high-end properties
+4. **Waterfront Access**: Commands significant premium (31.5%)
+5. **Bathroom Count**: Each additional bathroom adds substantial value (8.4%)
+
+#### Counterintuitive Discoveries
+- **House Age Positive Effect**: Older homes command higher prices (0.6% per year)
+- **Bedroom Quantity Penalty**: Additional bedrooms reduce price (-3.3% each)
+- **Efficiency Over Size**: Quality and functionality trump raw bedroom count
+
+### Actionable Recommendations
+
+#### For Real Estate Professionals
+- **Pricing Strategy**: Emphasize property age, lot size, and quality grade as primary factors
+- **Marketing Focus**: Highlight waterfront access, view quality, and bathroom count
+- **Value Enhancement**: Prioritize grade and condition improvements over bedroom additions
+- **Competitive Analysis**: Use Random Forest model for accurate price predictions
+
+#### For Property Sellers
+- **Investment Priorities**: Focus on bathroom additions and condition improvements
+- **Marketing Emphasis**: Showcase scenic views and waterfront access
+- **Realistic Expectations**: Understand that property age and lot size are fixed advantages
+- **Quality Over Quantity**: Emphasize craftsmanship and condition over bedroom count
+
+---
+
+## 🛠️ Technical Implementation
+
+### Development Environment
+```r
+# Core Libraries
+library(randomForest)    # Non-parametric modeling
+library(glmnet)         # LASSO regularization  
+library(dplyr)          # Data manipulation
+library(ggplot2)        # Visualization
+library(corrplot)       # Correlation analysis
+```
+
+### Data Preprocessing Code
+```r
+# Data Quality & Cleaning
+seattle_housing <- read.csv("house_sales.csv")
+
+# Remove outliers
+seattle_clean <- seattle_housing[seattle_housing$bedrooms != 33, ]
+
+# Feature Engineering
+seattle_clean$house_age <- 2024 - seattle_clean$yr_built
+seattle_clean$renovated <- ifelse(seattle_clean$yr_renovated == 0, 0, 1)
+
+# Variable Selection
+seattle_clean <- seattle_clean %>%
+  select(price, bedrooms, bathrooms, sqft_living, sqft_lot, floors, 
+         waterfront, view, condition, grade, house_age, renovated)
+
+# Type Conversions
+seattle_clean$waterfront <- as.factor(seattle_clean$waterfront)
+seattle_clean$view <- as.factor(seattle_clean$view)
+seattle_clean$condition <- as.factor(seattle_clean$condition)
+seattle_clean$grade <- as.factor(seattle_clean$grade)
+seattle_clean$renovated <- as.factor(seattle_clean$renovated)
+```
+
+### Model Training Examples
+```r
+# Random Forest Implementation
+rf_model <- randomForest(
+  formula = log(price) ~ ., 
+  data = seattle_clean,
+  ntree = 500,
+  importance = TRUE
+)
+
+# OLS Model Implementation  
+ols_model <- lm(
+  formula = log(price) ~ bedrooms + bathrooms + sqft_living + 
+            floors + waterfront + view + condition + grade + house_age,
+  data = seattle_clean
+)
+
+# 10-Fold Cross Validation
+cv_results <- cv.glmnet(
+  x = model_matrix, 
+  y = log(seattle_clean$price),
+  nfolds = 10,
+  alpha = 1  # LASSO
+)
+```
+
+---
+
+## 🎓 Academic Rigor & Methodology
+
+### Statistical Validation
+- **Assumption Testing**: Comprehensive OLS diagnostics
+- **Cross-Validation**: 10-fold CV for robust performance assessment
+- **Model Comparison**: Multiple methodological approaches
+- **Significance Testing**: ANOVA for categorical variables
+
+### Research Quality Standards
+- **Reproducible Analysis**: Documented code and methodology
+- **Peer Review**: Collaborative team validation
+- **Literature Integration**: Current market research incorporation
+- **Professional Presentation**: Academic-standard documentation
+
+### Limitations & Future Work
+- **Heteroscedasticity**: Persistent in linear models despite corrections
+- **Temporal Factors**: Seasonal variations not captured
+- **Geographic Clustering**: Spatial effects not explicitly modeled
+- **Market Dynamics**: Historical data may not reflect current conditions
+
+---
+
+## 🏆 Project Impact & Learning Outcomes
+
+### Technical Achievements
+- **Model Performance**: 70% variance explained with Random Forest
+- **Business Value**: Actionable insights for real estate professionals
+- **Methodological Rigor**: Comprehensive model comparison and validation
+- **Code Quality**: Production-ready statistical analysis
+
+### Key Learning Insights
+1. **Assumption Handling**: OLS violations don't require abandoning the method
+2. **Model Selection**: Different models serve different business purposes
+3. **Feature Engineering**: Domain knowledge enhances analytical outcomes
+4. **Cross-Validation**: Essential for robust model performance assessment
+
+### Challenges Overcome
+- **Technical Issues**: Complex cross-validation implementation
+- **Assumption Violations**: Strategic pivoting to alternative methodologies  
+- **Interpretation Balance**: Combining predictive accuracy with business insights
+- **Collaborative Development**: Team coordination and code integration
+
+---
+
+## 📚 References
+
+1. Carbonaro, G. (2024). Blue States Are Creating a Housing Market Crisis. *Newsweek*. [Link](https://www.newsweek.com/blue-states-housing-market-crisis-1877226)
+
+2. Mahajan, S. (2019). Seattle House Sales Prices. *Kaggle*. [Link](https://www.kaggle.com/datasets/sameersmahajan/seattle-house-sales-prices)
+
+3. Martin, E. J. (2024). 2024 Second-quarter Housing Trends: High Hopes for Spring. *Bankrate*. [Link](https://www.bankrate.com/real-estate/housing-trends/)
+
+4. Ostrowski, J. (2024). Is the Housing Market Going to Crash? What the Experts Are Saying. *Bankrate*. [Link](https://www.bankrate.com/real-estate/is-the-housing-market-about-to-crash/)
+
+5. United States Housing Market. (2024). *Redfin*. [Link](https://www.redfin.com/us-housing-market)
+
+---
+
+## 📞 Team Contact Information
+
+**Primary Contact**: Peter Chika Ozo-Ogueji  
+**Email**: po3783a@american.edu  
+**Institution**: American University, Kogod School of Business  
+**Course**: ITEC 621 Predictive Analytics  
+
+*This project represents collaborative academic work in applied data science and predictive analytics, demonstrating both theoretical understanding and practical implementation of machine learning techniques for real estate market analysis.*
+
