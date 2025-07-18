@@ -1,4 +1,4 @@
-# AnalyticsPro - Seattle Housing Analytics Dashboard
+# AnalyticsPro - Seattle Housing Analytics Dashboard 
 
 ## 🏠 Project Overview
 
