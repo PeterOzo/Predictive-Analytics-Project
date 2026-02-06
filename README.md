@@ -1,4 +1,4 @@
-# AnalyticsPro - Seattle Housing Analytics Platform: Advanced Real Estate Intelligence & Predictive Modeling Dashboard
+# AnalyticsPro - Seattle Housing Analytics Platform: Advanced Real Estate Intelligence & Predictive Modeling Dashboard 
 
 [![R Shiny](https://img.shields.io/badge/R%20Shiny-4.0+-blue.svg)](https://shiny.rstudio.com/)
 [![Machine Learning](https://img.shields.io/badge/ML-Random%20Forest%20%7C%20LASSO%20%7C%20OLS-orange.svg)](/)
